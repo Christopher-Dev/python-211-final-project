@@ -2,7 +2,6 @@ import random
 import time
 import string
 import json
-from datetime import date
 
 
 def getlowercase():
@@ -42,7 +41,6 @@ class Device:
         self.firmware = firmware
         self.device_type = device_type
 
-
     def new_device_set_up(self):
         file = open("Device_id.txt", "a")
         file.write("Thingamajig: " + self.device_id + "\n" + "Ssid: " + self.wifi_ssid + "\n" + "Password: "
@@ -66,11 +64,11 @@ class Scanner(Device):
     def scanner_set_up(self):
         file = open("Device_id.txt", "a")
         file.write("Thingamajig: " + self.device_id + "\n" + "Ssid: " + self.wifi_ssid + "\n" + "Password: "
-                   + self.wifi_password + "\npos_emulation: " + self.pos_emulation + "\nPrinter Firmware: " + self.firmware + "\nDevice Type: Printer" + "\n" + "----------------------------------------------------------\n")
+                   + self.wifi_password + "\npos_emulation: " + self.pos_emulation + "\nScanner Firmware: " + self.firmware + "\nDevice Type: Scanner" + "\n" + "----------------------------------------------------------\n")
         file.close()
         print(
             "----------------------------------------------------------\n" + "Thingamajig: " + self.device_id + "\n" + "Wifi ssid: " + self.wifi_ssid + "\n" + "Wifi Password: "
-            + self.wifi_password + "\n" + "pos_emulation: " + self.pos_emulation + "\nPrinter Firmware: " + self.firmware + "\nDevice Type: " + self.device_type + "\n"
+            + self.wifi_password + "\n" + "pos_emulation: " + self.pos_emulation + "\nScanner Firmware: " + self.firmware + "\nDevice Type: " + self.device_type + "\n"
             + "----------------------------------------------------------" + "\n")
         file = open("Activation_Log.txt", "a")
         file.write("Thingamajig: " + self.device_id + "\n")
@@ -123,7 +121,7 @@ class Printer(Device):
         file.close()
         print(
             "----------------------------------------------------------\n" + "Thingamajig: " + self.device_id + "\n" + "Wifi ssid: " + self.wifi_ssid + "\n" + "Wifi Password: "
-            + self.wifi_password + "\n" + "pos_emulation: " + self.pos_emulation + "\nPrinter Firmware: " + self.firmware + "\nDevice Type: " + self.device_type + "\n"
+            + self.wifi_password + "\n" + "pos_emulation: " + self.pos_emulation + "\nScanner Firmware: " + self.firmware + "\nDevice Type: " + self.device_type + "\n"
             + "----------------------------------------------------------" + "\n")
         file = open("Activation_Log.txt", "a")
         file.write("Thingamajig: " + self.device_id + "\n")
@@ -215,7 +213,7 @@ def main():
             index = random.randint(0, 20)
             pw.append(index)
         pw_mask = ''.join(map(str, pw))
-        print("1) Provision 2) Update Device on COM0 3) Update Flasher 0) Main Menu 00) Exit Program ")
+        print("1) Provision 2) Update Device on COM0 3) Update Flasher 4) Check Current Credentials 0) Main Menu 00) Exit Program ")
         print("Activation Code: " + pw_mask)
         first_choice = input("What will you be doing today? ")
         if first_choice == "1":
@@ -226,8 +224,9 @@ def main():
                 print("Make sure to copy the activation code exactly.")
                 new_scanner = input("Paste Activation code: ")
                 if new_scanner == pw_mask:
-                    new_scanner = Scanner(input("Network Name: "), input("Password: "), pw_mask,input("pos_emulation: "), input("printer_firmware: "), "Scanner")
+                    new_scanner = Scanner(input("Network Name: "), input("Password: "), pw_mask,input("pos_emulation: "), input("Scanner_firmware: "), "Scanner")
                     new_scanner.scanner_set_up()
+                    new_scanner.update_device()
                 else:
                     print(
                         "That is either an expired or inactive code, Please contact activation@setup.com for a new code.")
@@ -329,12 +328,31 @@ def main():
             print("Program will now Reboot")
             time.sleep(2)
 
+        elif first_choice == "4":
+            print("Current Device Credentials: ")
+            device_002 = json.load(open('COM0.json'))
+            print(device_002)
+
         elif first_choice == "0":
             print("Rebooting...")
             time.sleep(2)
             second_menu()
 
         elif first_choice == "00":
+            print("Device Disconnected.")
+            device_001 = {
+                'Device ID': 'N/A',
+                'SSID': 'N/A',
+                'Password': 'N/A',
+                'pos_emulation': 'N/A',
+                'firmware': 'N/A',
+                'type': 'N/A'
+            }
+
+            j = json.dumps(device_001)
+            with open('COM0.json', 'w') as f:
+                f.write(j)
+                f.close()
             break
 
         else:
